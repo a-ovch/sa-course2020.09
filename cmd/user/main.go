@@ -29,6 +29,7 @@ func main() {
 
 	log.Printf("Starting HTTP server on port %d", c.Port)
 
+	// Add graceful shutdown
 	srv := &http.Server{
 		Addr:    ":" + strconv.Itoa(c.Port),
 		Handler: r,
