@@ -25,6 +25,7 @@ func main() {
 
 	r := mux.NewRouter()
 	r.HandleFunc("/health", healthHandler)
+	r.HandleFunc("/ready", readyHandler)
 	r.Use(logMiddleware)
 
 	log.Printf("Starting HTTP server on port %d", c.Port)
@@ -39,6 +40,10 @@ func main() {
 
 func healthHandler(w http.ResponseWriter, _ *http.Request) {
 	_, _ = fmt.Fprint(w, "{\"status\": \"OK\"}")
+}
+
+func readyHandler(w http.ResponseWriter, r *http.Request) {
+	_, _ = fmt.Fprintf(w, "{\"host\": \"%v\"}", r.Host)
 }
 
 func logMiddleware(next http.Handler) http.Handler {
