@@ -17,10 +17,10 @@ spec:
         image: andyovch/sa-user:0.0.2
         env:
         - name: USER_PORT
-          value: "8080"
+          value: "8000"
         ports:
         - name: web
-          containerPort: 8080
+          containerPort: 8000
         livenessProbe:
           httpGet:
             port: web
