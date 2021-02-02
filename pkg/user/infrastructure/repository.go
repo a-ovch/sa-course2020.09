@@ -12,11 +12,26 @@ type userRepository struct {
 }
 
 func (r *userRepository) NextID() domain.UserID {
-	return domain.UserID(uuid.New())
+	return domain.UserID(uuid.New().String())
 }
 
-func (r *userRepository) Store(user *domain.User) error {
-	return nil
+func (r *userRepository) Store(u *domain.User) error {
+	const query = "INSERT INTO \"user\" (id, username, first_name, last_name, email, phone) VALUES ($1, $2, $3, $4, $5, $6)"
+	return r.client.Exec(query, u.ID, u.Username, u.FirstName, u.LastName, u.Email, u.Phone)
+}
+
+func (r *userRepository) Find(id domain.UserID) (*domain.User, error) {
+	const query = `SELECT id, username, first_name, last_name, email, phone FROM "user" WHERE id = $1`
+
+	u := new(domain.User)
+
+	row := r.client.QueryRow(query, id)
+	err := row.Scan(&u.ID, &u.Username, &u.FirstName, &u.LastName, &u.Email, &u.Phone)
+	if err != nil {
+		return nil, err
+	}
+
+	return u, nil
 }
 
 func NewUserRepository(client database.Client) domain.UserRepository {

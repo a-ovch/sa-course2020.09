@@ -16,4 +16,5 @@ type User struct {
 type UserRepository interface {
 	NextID() UserID
 	Store(user *User) error
+	Find(id UserID) (*User, error)
 }

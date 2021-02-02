@@ -7,12 +7,12 @@ import (
 )
 
 type App struct {
-	appService *app.Service
+	AppService *app.Service
 }
 
 func NewApplication(c database.Client) *App {
 	ur := infrastructure.NewUserRepository(c)
 	s := app.NewService(ur)
 
-	return &App{appService: s}
+	return &App{AppService: s}
 }

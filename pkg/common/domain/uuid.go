@@ -1,3 +1,3 @@
 package domain
 
-type UUID [16]byte
+type UUID string
