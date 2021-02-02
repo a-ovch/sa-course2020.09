@@ -9,12 +9,16 @@ import (
 var ErrUserNotFound = errors.New("user not found")
 
 type UserData struct {
-	ID        string `json:"id,omitempty"`
 	Username  string `json:"username"`
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
 	Email     string `json:"email"`
 	Phone     string `json:"phone"`
+}
+
+type UserDataWithID struct {
+	ID string `json:"id"`
+	UserData
 }
 
 type Service struct {
@@ -39,7 +43,7 @@ func (s *Service) CreateUser(d *UserData) (*domain.User, error) {
 	return u, nil
 }
 
-func (s *Service) FindUser(id string) (*UserData, error) {
+func (s *Service) FindUser(id string) (*UserDataWithID, error) {
 	uid := domain.UserID(id)
 	u, err := s.ur.Find(uid)
 	if err != nil {
@@ -49,14 +53,39 @@ func (s *Service) FindUser(id string) (*UserData, error) {
 		return nil, ErrUserNotFound
 	}
 
-	return &UserData{
-		ID:        string(u.ID),
-		Username:  u.Username,
-		FirstName: u.FirstName,
-		LastName:  u.LastName,
-		Email:     u.Email,
-		Phone:     u.Phone,
+	return &UserDataWithID{
+		string(u.ID),
+		UserData{
+			Username:  u.Username,
+			FirstName: u.FirstName,
+			LastName:  u.LastName,
+			Email:     u.Email,
+			Phone:     u.Phone,
+		},
 	}, nil
+}
+
+func (s *Service) UpdateUser(id string, data *UserData) error {
+	u, err := s.ur.Find(domain.UserID(id))
+	if err != nil {
+		return err
+	}
+
+	if u == nil {
+		return ErrUserNotFound
+	}
+
+	u.Username = data.Username
+	u.FirstName = data.FirstName
+	u.LastName = data.LastName
+	u.Email = data.Email
+	u.Phone = data.Phone
+
+	return s.ur.Store(u)
+}
+
+func (s *Service) DeleteUser(id string) error {
+	return s.ur.Delete(domain.UserID(id))
 }
 
 func NewService(ur domain.UserRepository) *Service {

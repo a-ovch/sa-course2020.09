@@ -17,4 +17,5 @@ type UserRepository interface {
 	NextID() UserID
 	Store(user *User) error
 	Find(id UserID) (*User, error)
+	Delete(id UserID) error
 }
