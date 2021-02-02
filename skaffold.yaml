@@ -10,6 +10,8 @@ build:
 deploy:
   kubectl:
     manifests:
+    - deployments/k8s/config.yaml
+    - deployments/k8s/secret.yaml
     - deployments/k8s/deployment.yaml
     - deployments/k8s/ingress.yaml
     - deployments/k8s/service.yaml

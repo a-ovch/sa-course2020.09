@@ -17,7 +17,35 @@ spec:
         image: andyovch/sa-user:0.0.2
         env:
         - name: USER_PORT
-          value: "8000"
+          valueFrom:
+            configMapKeyRef:
+              name: user-config
+              key: service_port
+        - name: USER_DBUSER
+          valueFrom:
+            configMapKeyRef:
+              name: user-config
+              key: db_user
+        - name: USER_DBPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: user-secret
+              key: db_password
+        - name: USER_DBHOST
+          valueFrom:
+            configMapKeyRef:
+              name: user-config
+              key: db_host
+        - name: USER_DBPORT
+          valueFrom:
+            configMapKeyRef:
+              name: user-config
+              key: db_port
+        - name: USER_DBNAME
+          valueFrom:
+            configMapKeyRef:
+              name: user-config
+              key: db_name
         ports:
         - name: web
           containerPort: 8000
