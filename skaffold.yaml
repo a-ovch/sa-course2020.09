@@ -15,3 +15,4 @@ deploy:
     - deployments/k8s/deployment.yaml
     - deployments/k8s/ingress.yaml
     - deployments/k8s/service.yaml
+    - deployments/k8s/initdb.yaml

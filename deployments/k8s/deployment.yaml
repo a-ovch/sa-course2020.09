@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: user
-        image: andyovch/sa-user:0.0.2
+        image: andyovch/sa-user:0.0.3
         env:
         - name: USER_PORT
           valueFrom:

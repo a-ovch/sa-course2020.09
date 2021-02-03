@@ -4,7 +4,7 @@ metadata:
   name: user-config
 data:
   service_port: "8000"
-  db_host: "db2-postgresql"
+  db_host: "db-postgresql"
   db_name: "user"
   db_user: "user-service"
   db_port: "5432"

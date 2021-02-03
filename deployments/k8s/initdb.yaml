@@ -1,0 +1,77 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: user-initdb
+spec:
+  template:
+    metadata:
+      name: user-initdb
+    spec:
+      restartPolicy: Never
+      initContainers:
+      - name: check-db-is-ready
+        image: postgres:11.10
+        env:
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: user-config
+              key: db_host
+        - name: DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: user-config
+              key: db_port
+        command:
+          - sh
+          - "-c"
+          - |
+            until pg_isready -h $DB_HOST -p $DB_PORT;
+            do echo "waiting for database"; sleep 2; done;
+      containers:
+      - name: user-migrate-db
+        env:
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: user-config
+              key: db_host
+        - name: DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: user-config
+              key: db_port
+        - name: DB_USER
+          valueFrom:
+            configMapKeyRef:
+              name: user-config
+              key: db_user
+        - name: DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: user-config
+              key: db_name
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: user-secret
+              key: db_password
+        image: postgres:11.10
+        command:
+          - sh
+          - "-c"
+          - |
+            psql postgresql://$DB_USER:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME << 'EOF'
+              CREATE TABLE IF NOT EXISTS "user"
+              (
+                  id         uuid,
+                  username   VARCHAR NOT NULL,
+                  first_name VARCHAR NOT NULL,
+                  last_name  VARCHAR NOT NULL,
+                  email      VARCHAR NOT NULL,
+                  phone      VARCHAR NOT NULL,
+                  PRIMARY KEY (id)
+              );
+            EOF
+
+  backoffLimit: 1
