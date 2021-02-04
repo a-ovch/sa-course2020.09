@@ -1,54 +1,56 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: user-deployment
+  name: {{ include "userchart.fullname" . }}
+  labels:
+    {{- include "userchart.labels" . | nindent 4 }}
 spec:
-  replicas: 2
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: user-app
+      {{- include "userchart.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        app: user-app
+        {{- include "userchart.selectorLabels" . | nindent 8 }}
     spec:
       containers:
-      - name: user
-        image: andyovch/sa-user:0.0.3
+      - name: {{ .Chart.Name }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         env:
         - name: USER_PORT
           valueFrom:
             configMapKeyRef:
-              name: user-config
+              name: {{ include "userchart.fullname" . }}-config
               key: service_port
         - name: USER_DBUSER
           valueFrom:
             configMapKeyRef:
-              name: user-config
+              name: {{ include "userchart.fullname" . }}-config
               key: db_user
         - name: USER_DBPASSWORD
           valueFrom:
             secretKeyRef:
-              name: user-secret
+              name: {{ include "userchart.fullname" . }}-secret
               key: db_password
         - name: USER_DBHOST
           valueFrom:
             configMapKeyRef:
-              name: user-config
+              name: {{ include "userchart.fullname" . }}-config
               key: db_host
         - name: USER_DBPORT
           valueFrom:
             configMapKeyRef:
-              name: user-config
+              name: {{ include "userchart.fullname" . }}-config
               key: db_port
         - name: USER_DBNAME
           valueFrom:
             configMapKeyRef:
-              name: user-config
+              name: {{ include "userchart.fullname" . }}-config
               key: db_name
         ports:
         - name: web
-          containerPort: 8000
+          containerPort: {{ .Values.service.port }}
         livenessProbe:
           httpGet:
             port: web

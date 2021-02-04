@@ -8,6 +8,7 @@ type Client interface {
 	Exec(query string, args ...interface{}) error
 	Query(query string, args ...interface{}) (*sql.Rows, error)
 	QueryRow(query string, args ...interface{}) *sql.Row
+	Close() error
 }
 
 type client struct {
@@ -25,6 +26,10 @@ func (c *client) Query(query string, args ...interface{}) (*sql.Rows, error) {
 
 func (c *client) QueryRow(query string, args ...interface{}) *sql.Row {
 	return c.db.QueryRow(query, args...)
+}
+
+func (c *client) Close() error {
+	return c.db.Close()
 }
 
 func NewClient(db *sql.DB) Client {

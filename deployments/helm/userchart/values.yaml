@@ -1,0 +1,19 @@
+replicaCount: 2
+
+image:
+  repository: andyovch/sa-user
+  tag: 0.0.7
+
+service:
+  port: 8000
+  type: ClusterIP
+
+ingress:
+  host: arch.homework
+  pathPrefix: /otusapp/andrey
+
+postgresql:
+  enabled: true
+  postgresqlPassword: fdq12nc
+  postgresqlDatabase: user
+  postgresqlUsername: user-service

@@ -10,6 +10,7 @@ import (
 	"os/signal"
 	"strconv"
 	"syscall"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/kelseyhightower/envconfig"
@@ -39,23 +40,52 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	dsn := postgres.NewDSN(c.DbHost, c.DbPort, c.DbUser, c.DbPassword, c.DbName)
-	db, err := sql.Open("postgres", dsn.ToDSNString())
-	if err != nil {
-		log.Fatalf("Cannot connect to DB: %+v", err)
-	}
-	defer db.Close()
+	client := connectToDb(c)
+	defer client.Close()
 
-	err = db.Ping()
-	if err != nil {
-		log.Fatalf("DB ping error: %+v", err)
-	}
-
-	client := database.NewClient(db)
 	app := user.NewApplication(client)
 	router := transport.NewRouter(app)
 
 	startHttpServer(c, createHttpHandler(router))
+}
+
+func connectToDb(c Config) database.Client {
+	const attempts = 5
+	const timeout = 2 * time.Second
+
+	dsn := postgres.NewDSN(c.DbHost, c.DbPort, c.DbUser, c.DbPassword, c.DbName)
+
+	var db *sql.DB
+	var err error
+	for i := 0; i < attempts; i++ {
+		log.Print("Try to connect to DB...")
+
+		db, err = sql.Open("postgres", dsn.ToDSNString())
+		if err == nil {
+			break
+		}
+		time.Sleep(timeout)
+	}
+
+	if err != nil {
+		log.Fatalf("Failed to connect to DB: %+v", err)
+	}
+
+	for i := 0; i < attempts; i++ {
+		log.Print("DB is pinging...")
+		err = db.Ping()
+		if err == nil {
+			break
+		}
+		time.Sleep(timeout)
+	}
+
+	if err != nil {
+		_ = db.Close()
+		log.Fatalf("DB ping failed %+v", err)
+	}
+
+	return database.NewClient(db)
 }
 
 func startHttpServer(c Config, h http.Handler) {

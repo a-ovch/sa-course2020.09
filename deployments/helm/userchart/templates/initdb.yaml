@@ -1,11 +1,22 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: user-initdb
+  name: {{ include "userchart.fullname" . }}-init
+  labels:
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": post-install
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": hook-succeeded
 spec:
   template:
     metadata:
-      name: user-initdb
+      name: {{ .Release.Name }}
     spec:
       restartPolicy: Never
       initContainers:
@@ -15,12 +26,12 @@ spec:
         - name: DB_HOST
           valueFrom:
             configMapKeyRef:
-              name: user-config
+              name: {{ include "userchart.fullname" . }}-config
               key: db_host
         - name: DB_PORT
           valueFrom:
             configMapKeyRef:
-              name: user-config
+              name: {{ include "userchart.fullname" . }}-config
               key: db_port
         command:
           - sh
@@ -34,27 +45,27 @@ spec:
         - name: DB_HOST
           valueFrom:
             configMapKeyRef:
-              name: user-config
+              name: {{ include "userchart.fullname" . }}-config
               key: db_host
         - name: DB_PORT
           valueFrom:
             configMapKeyRef:
-              name: user-config
+              name: {{ include "userchart.fullname" . }}-config
               key: db_port
         - name: DB_USER
           valueFrom:
             configMapKeyRef:
-              name: user-config
+              name: {{ include "userchart.fullname" . }}-config
               key: db_user
         - name: DB_NAME
           valueFrom:
             configMapKeyRef:
-              name: user-config
+              name: {{ include "userchart.fullname" . }}-config
               key: db_name
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: user-secret
+              name: {{ include "userchart.fullname" . }}-secret
               key: db_password
         image: postgres:11.10
         command:
